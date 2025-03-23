@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -21,6 +22,12 @@ public class OrchestratorController {
 
     private final Logger logger = LoggerFactory.getLogger(OrchestratorController.class);
 
+    @Value("${service.greetings.url}")
+    private String greetingServiceUrl;
+
+    @Value("${service.concatenation.url}")
+    private String concatenationServiceUrl;
+
     @GetMapping("/health")
     public ResponseEntity<String> checkHealth() {
         return ResponseEntity.ok("Up");
@@ -33,10 +40,10 @@ public class OrchestratorController {
         logger.info("[{}] Received request: {}", traceId, request);
 
         // Call Service 2 (GET)
-        ResponseEntity<String> greetResponse = restTemplate.getForEntity("http://localhost:8081/greet", String.class);
+        ResponseEntity<String> greetResponse = restTemplate.getForEntity(greetingServiceUrl, String.class);
 
         // Call Service 3 (POST)
-        ResponseEntity<String> concatResponse = restTemplate.postForEntity("http://localhost:8082/concat", request, String.class);
+        ResponseEntity<String> concatResponse = restTemplate.postForEntity(concatenationServiceUrl, request, String.class);
 
         String finalResponse = greetResponse.getBody() + " " + concatResponse.getBody();
         logger.info("[{}] Final response: {}", traceId, finalResponse);
